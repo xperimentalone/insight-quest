@@ -1,12 +1,16 @@
 name: Deploy to GitHub Pages
 
-# Run this workflow automatically on pushes to the main branch
 on:
   push:
     branches:
       - main
 
-# Sets the permissions for the GitHub token to allow deployment
+# Ensures that only one deployment runs at a time, cancelling older runs.
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+# Sets the permissions for the GitHub token to allow deployment.
 permissions:
   contents: read
   pages: write
@@ -14,6 +18,10 @@ permissions:
 
 jobs:
   deploy:
+    # Specifies the deployment environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       # 1. Checks out your repository's code
