@@ -1,0 +1,43 @@
+name: Deploy to GitHub Pages
+
+# Run this workflow automatically on pushes to the main branch
+on:
+  push:
+    branches:
+      - main
+
+# Sets the permissions for the GitHub token to allow deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checks out your repository's code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Securely replaces the API key placeholder with your secret
+      - name: Replace API_KEY with secret
+        run: |
+          # Find all .tsx files containing the placeholder and replace it
+          grep -rl 'process.env.API_KEY' . | xargs sed -i "s|process.env.API_KEY|'${{ secrets.GEMINI_API_KEY }}'|g"
+      
+      # 3. Sets up the GitHub Pages environment
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      # 4. Uploads your code as a deployable artifact
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload the entire root directory
+          path: '.'
+
+      # 5. Deploys the artifact to GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
