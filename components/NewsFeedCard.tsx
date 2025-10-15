@@ -43,6 +43,7 @@ const NewsFeedCard: React.FC<NewsFeedCardProps> = ({ t, onSelectArticle, languag
         
         setError(null);
         try {
+            // FIX: Use process.env.API_KEY as per the guidelines.
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
             const now = new Date();
             const year = now.getFullYear();
