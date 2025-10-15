@@ -43,15 +43,12 @@ const NewsFeedCard: React.FC<NewsFeedCardProps> = ({ t, onSelectArticle, languag
         
         setError(null);
         try {
-            // FIX: Use process.env.API_KEY as per the guidelines.
+            // FIX: Use process.env.API_KEY to align with Gemini API guidelines.
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = now.toLocaleString(language === 'zh' ? 'zh-HK' : 'en-US', { month: 'long' });
 
             const prompt = language === 'zh'
-                ? `以繁體中文，使用 Google 搜尋尋找 5 篇來自香港，關於不同類別的最新新聞文章，發布於 ${year}年${month}。對於每篇文章，請提供標題、100-150 字的摘要、類別和直接的來源網址。將整個回應格式化為單一 JSON 陣列，其中每個物件都有 "title"、"summary"、"category" 和 "sourceUrl" 的鍵。請確保來源網址有效且可公開存取。JSON 陣列前後不要包含任何文字。`
-                : `Find 5 recent news articles from Hong Kong from various categories published in ${month} ${year} using Google Search. For each article, provide the title, a 100-150 word summary, the category, and the direct source URL. Format the entire response as a single JSON array, where each object has "title", "summary", "category", and "sourceUrl" keys. Ensure source URLs are valid and publicly accessible. Do not include any text before or after the JSON array.`;
+                ? `以繁體中文，使用 Google 搜尋尋找 5 篇來自香港，關於不同類別的最新新聞文章。對於每篇文章，請提供標題、100-150 字的摘要、類別和直接的來源網址。將整個回應格式化為單一 JSON 陣列，其中每個物件都有 "title"、"summary"、"category" 和 "sourceUrl" 的鍵。請確保來源網址有效且可公開存取。JSON 陣列前後不要包含任何文字。`
+                : `Find 5 recent news articles from Hong Kong from various categories using Google Search. For each article, provide the title, a 100-150 word summary, the category, and the direct source URL. Format the entire response as a single JSON array, where each object has "title", "summary", "category", and "sourceUrl" keys. Ensure source URLs are valid and publicly accessible. Do not include any text before or after the JSON array.`;
 
             const response = await ai.models.generateContent({
                 model: "gemini-2.5-flash",
@@ -123,8 +120,8 @@ const NewsFeedCard: React.FC<NewsFeedCardProps> = ({ t, onSelectArticle, languag
                 // If no cache, use hardcoded fallback
                 setError(userMessage);
                 setArticles([
-                    {id: 1, category: 'Business', title: 'HKMA maintains base rate at 5.75 percent', summary: 'The Hong Kong Monetary Authority (HKMA) on Thursday maintained its base rate at 5.75 percent. This decision comes after the US Federal Reserve kept its key interest rate unchanged amid ongoing inflation concerns. The HKMA\'s move was widely expected by economists, who predict that local borrowing costs will remain elevated for the foreseeable future. This stability is crucial for maintaining the Hong Kong dollar\'s peg to the US dollar. Businesses are closely watching these developments, as higher interest rates can impact investment and consumer spending across the city.', sourceUrl: '#'},
-                    {id: 2, category: 'Community', title: 'HK Community Ball raises funds for charity', summary: 'The annual Hong Kong Community Ball was held last Saturday, raising over HK$5 million for local charities supporting underprivileged children and the elderly. The event, a highlight of the city\'s social calendar, was attended by numerous business leaders and philanthropists. An auction featuring unique experiences and luxury items was a major contributor to the funds raised. Organizers expressed their gratitude for the community\'s generosity, emphasizing the significant impact these funds will have on improving the lives of vulnerable groups in Hong Kong, especially in the post-pandemic recovery period.', sourceUrl: '#'},
+                    {id: 1, category: 'Tech', title: 'Hong Kong pushes to be a global hub for Web3', summary: 'Hong Kong is making a significant push to establish itself as a leading global hub for Web3 and virtual assets. The government has introduced new licensing regimes for virtual asset trading platforms and is actively encouraging innovation in the space. This strategic move aims to attract talent and capital, positioning the city at the forefront of the next wave of internet technology.', sourceUrl: 'https://www.reuters.com/technology/hong-kongs-new-crypto-rules-explained-2023-05-31/'},
+                    {id: 2, category: 'Culture', title: 'M+ Museum becomes a new cultural landmark in Hong Kong', summary: 'The M+ museum in the West Kowloon Cultural District has quickly become a new landmark for arts and culture in Hong Kong. As Asia\'s first global museum of contemporary visual culture, it showcases a vast collection of 20th and 21st-century art, design, architecture, and moving images from Hong Kong, mainland China, and across the world. Its striking architecture and diverse exhibitions have drawn significant international attention.', sourceUrl: 'https://www.mplus.org.hk/en/'},
                 ]);
             } else {
                 setError(isRateLimitError ? "Could not load more articles due to high demand." : "Could not load more articles.");
@@ -133,7 +130,7 @@ const NewsFeedCard: React.FC<NewsFeedCardProps> = ({ t, onSelectArticle, languag
             if (isRefresh) setLoading(false);
             else setFetchingMore(false);
         }
-    }, [language, t]);
+    }, [language]);
 
     useEffect(() => {
         fetchNews(true); // `true` indicates a refresh
