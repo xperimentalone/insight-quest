@@ -1,6 +1,6 @@
 # Insight Quest 🗺️
 
-An addictive yet professional news reading platform. 
+An addictive yet professional news reading platform. (https://xperimentalone.github.io/insight-quest/)
 
 ## The Core Concept
 
