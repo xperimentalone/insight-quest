@@ -8,6 +8,9 @@ interface NewsFeedCardProps {
     language: Language;
 }
 
+const CACHE_KEY_PREFIX = 'insight_quest_news_cache_';
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
+
 const NewsFeedCard: React.FC<NewsFeedCardProps> = ({ t, onSelectArticle, language }) => {
     const [articles, setArticles] = useState<Article[]>([]);
     const [loading, setLoading] = useState(true); // For initial load
@@ -15,8 +18,28 @@ const NewsFeedCard: React.FC<NewsFeedCardProps> = ({ t, onSelectArticle, languag
     const [error, setError] = useState<string | null>(null);
 
     const fetchNews = useCallback(async (isRefresh: boolean) => {
-        if (isRefresh) setLoading(true);
-        else setFetchingMore(true);
+        const cacheKey = `${CACHE_KEY_PREFIX}${language}`;
+
+        if (isRefresh) {
+            setLoading(true);
+            const cachedData = localStorage.getItem(cacheKey);
+            if (cachedData) {
+                try {
+                    const { timestamp, articles: cachedArticles } = JSON.parse(cachedData);
+                    if (Date.now() - timestamp < CACHE_DURATION && cachedArticles.length > 0) {
+                        setArticles(cachedArticles);
+                        setLoading(false);
+                        setError(null);
+                        return; // Use fresh cached data
+                    }
+                } catch (e) {
+                    console.error("Error reading from cache", e);
+                    localStorage.removeItem(cacheKey);
+                }
+            }
+        } else {
+            setFetchingMore(true);
+        }
         
         setError(null);
         try {
@@ -62,29 +85,58 @@ const NewsFeedCard: React.FC<NewsFeedCardProps> = ({ t, onSelectArticle, languag
             
             if (isRefresh) {
                 setArticles(newArticlesWithIds);
+                const cachePayload = { timestamp: Date.now(), articles: newArticlesWithIds };
+                localStorage.setItem(cacheKey, JSON.stringify(cachePayload));
             } else {
-                setArticles(prevArticles => [...prevArticles, ...newArticlesWithIds]);
+                 setArticles(prevArticles => {
+                    const allArticles = [...prevArticles, ...newArticlesWithIds];
+                    const cachePayload = { timestamp: Date.now(), articles: allArticles };
+                    localStorage.setItem(cacheKey, JSON.stringify(cachePayload));
+                    return allArticles;
+                });
             }
 
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error fetching news:", err);
-            setError("Failed to fetch news. Please try again later.");
+            const errString = err.toString();
+            const isRateLimitError = errString.includes('429') || errString.includes('RESOURCE_EXHAUSTED');
+            let userMessage = "Failed to fetch news. Please try again later.";
+            
+            if (isRateLimitError) {
+                userMessage = "News service is temporarily unavailable due to high demand. Showing older articles if available.";
+            }
+
             if (isRefresh) {
+                const cachedData = localStorage.getItem(cacheKey);
+                if (cachedData) {
+                    try {
+                        const { articles: cachedArticles } = JSON.parse(cachedData);
+                        if (cachedArticles.length > 0) {
+                            setArticles(cachedArticles);
+                            setError(userMessage); // Inform user that data is stale
+                            return; // exit from catch block
+                        }
+                    } catch (e) { console.error("Error reading stale cache", e); }
+                }
+                
+                // If no cache, use hardcoded fallback
+                setError(userMessage);
                 setArticles([
                     {id: 1, category: 'Business', title: 'HKMA maintains base rate at 5.75 percent', summary: 'The Hong Kong Monetary Authority (HKMA) on Thursday maintained its base rate at 5.75 percent. This decision comes after the US Federal Reserve kept its key interest rate unchanged amid ongoing inflation concerns. The HKMA\'s move was widely expected by economists, who predict that local borrowing costs will remain elevated for the foreseeable future. This stability is crucial for maintaining the Hong Kong dollar\'s peg to the US dollar. Businesses are closely watching these developments, as higher interest rates can impact investment and consumer spending across the city.', sourceUrl: '#'},
                     {id: 2, category: 'Community', title: 'HK Community Ball raises funds for charity', summary: 'The annual Hong Kong Community Ball was held last Saturday, raising over HK$5 million for local charities supporting underprivileged children and the elderly. The event, a highlight of the city\'s social calendar, was attended by numerous business leaders and philanthropists. An auction featuring unique experiences and luxury items was a major contributor to the funds raised. Organizers expressed their gratitude for the community\'s generosity, emphasizing the significant impact these funds will have on improving the lives of vulnerable groups in Hong Kong, especially in the post-pandemic recovery period.', sourceUrl: '#'},
                 ]);
+            } else {
+                setError(isRateLimitError ? "Could not load more articles due to high demand." : "Could not load more articles.");
             }
         } finally {
             if (isRefresh) setLoading(false);
             else setFetchingMore(false);
         }
-    }, [language]);
+    }, [language, t]);
 
     useEffect(() => {
         fetchNews(true); // `true` indicates a refresh
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [language]); 
+    }, [language, fetchNews]); 
 
     const handleLoadMore = () => {
         if (!fetchingMore) {
@@ -111,9 +163,7 @@ const NewsFeedCard: React.FC<NewsFeedCardProps> = ({ t, onSelectArticle, languag
                     <>
                         {Array.from({ length: 3 }).map((_, i) => <div key={i}>{renderSkeleton()}</div>)}
                     </>
-                ) : error && articles.length === 0 ? (
-                    <p className="text-center text-red-500">{error}</p>
-                ) : (
+                ) : articles.length > 0 ? (
                     articles.map(article => (
                         <div key={article.id} className="group cursor-pointer" onClick={() => onSelectArticle(article)}>
                             <div className="flex items-start space-x-4">
@@ -125,7 +175,10 @@ const NewsFeedCard: React.FC<NewsFeedCardProps> = ({ t, onSelectArticle, languag
                             </div>
                         </div>
                     ))
-                )}
+                ) : null }
+
+                {error && <p className="text-center text-red-500 py-4">{error}</p>}
+                
                 {fetchingMore && (
                      <>
                         {Array.from({ length: 3 }).map((_, i) => <div key={i}>{renderSkeleton()}</div>)}
