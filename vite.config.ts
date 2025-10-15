@@ -7,7 +7,7 @@ export default defineConfig({
   // IMPORTANT: Replace '<your-repo-name>' with the name of your GitHub repository.
   // For example, if your repository URL is https://github.com/user/my-app,
   // the base should be '/my-app/'.
-  base: '/<your-repo-name>/',
+  base: '/insight-quest/',
   define: {
     // This makes the environment variable available in your client-side code
     'process.env.API_KEY': JSON.stringify(process.env.API_KEY)
