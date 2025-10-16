@@ -27,8 +27,8 @@ const MysteryTopicCard: React.FC<MysteryTopicCardProps> = ({ t, onXpEarned }) =>
     const generateArticleAndQuiz = async (topic: string) => {
         setIsGenerating(true);
         try {
-            // FIX: Use process.env.API_KEY to align with Gemini API guidelines.
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            // FIX: Use import.meta.env.VITE_GEMINI_API_KEY to align with Vite and Gemini API guidelines.
+            const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
             
             // Step 1: Generate article content using Google Search
             const articleResponse = await ai.models.generateContent({

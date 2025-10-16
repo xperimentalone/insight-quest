@@ -43,8 +43,8 @@ const NewsFeedCard: React.FC<NewsFeedCardProps> = ({ t, onSelectArticle, languag
         
         setError(null);
         try {
-            // FIX: Use process.env.API_KEY to align with Gemini API guidelines.
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            // FIX: Use import.meta.env.VITE_GEMINI_API_KEY to align with Vite and Gemini API guidelines.
+            const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
             const prompt = language === 'zh'
                 ? `以繁體中文，使用 Google 搜尋尋找 5 篇來自香港主要、信譽良好的新聞機構，關於不同類別的最新新聞文章。對於每篇文章，請提供其可公開存取的直接網址，然後*僅根據該特定網址的內容*撰寫一篇 100-150 字的摘要。同時也請提供標題和類別。確保該網址不是付費專區內容。將整個回應格式化為單一 JSON 陣列，其中每個物件都有 "title"、"summary"、"category" 和 "sourceUrl" 的鍵。JSON 陣列前後不要包含任何文字。`
