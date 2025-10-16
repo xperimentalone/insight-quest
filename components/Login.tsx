@@ -94,7 +94,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, t }) => {
                                     required
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="mt-1 block w-full px-3 py-2 bg-gray-50 dark:bg-[#1A1A1A] border border-[#C1C1C1] dark:border-[#4A4A4A] rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#4ECDC4] focus:border-[#4ECDC4] sm:text-sm"
+                                    className="mt-1 block w-full px-3 py-2 bg-gray-50 dark:bg-[#1A1A1A] border border-[#C1C1C1] dark:border-[#4A4A4A] rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#4ECDC4] focus:border-[#4ECDC4] sm:text-sm text-[#2C2C2C] dark:text-white"
                                     placeholder="Your Name"
                                 />
                             </div>
@@ -109,7 +109,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, t }) => {
                                 required
                                 value={accountId}
                                 onChange={(e) => setAccountId(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 bg-gray-50 dark:bg-[#1A1A1A] border border-[#C1C1C1] dark:border-[#4A4A4A] rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#4ECDC4] focus:border-[#4ECDC4] sm:text-sm"
+                                className="mt-1 block w-full px-3 py-2 bg-gray-50 dark:bg-[#1A1A1A] border border-[#C1C1C1] dark:border-[#4A4A4A] rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#4ECDC4] focus:border-[#4ECDC4] sm:text-sm text-[#2C2C2C] dark:text-white"
                                 placeholder="your-account-id"
                             />
                         </div>
@@ -124,7 +124,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, t }) => {
                                 minLength={6}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 bg-gray-50 dark:bg-[#1A1A1A] border border-[#C1C1C1] dark:border-[#4A4A4A] rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#4ECDC4] focus:border-[#4ECDC4] sm:text-sm"
+                                className="mt-1 block w-full px-3 py-2 bg-gray-50 dark:bg-[#1A1A1A] border border-[#C1C1C1] dark:border-[#4A4A4A] rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#4ECDC4] focus:border-[#4ECDC4] sm:text-sm text-[#2C2C2C] dark:text-white"
                                 placeholder="******"
                             />
                         </div>

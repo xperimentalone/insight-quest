@@ -33,21 +33,28 @@ const MysteryTopicCard: React.FC<MysteryTopicCardProps> = ({ t, onXpEarned }) =>
             // Step 1: Generate article content using Google Search
             const articleResponse = await ai.models.generateContent({
                 model: "gemini-2.5-flash",
-                contents: `Using Google Search, find a recent and interesting news article or a fascinating fact related to the topic of ${t(topic)}. Summarize it concisely (around 100-150 words). Format the entire response as a single JSON object with keys: "title", "summary", "category" (which should be "${t(topic)}"), and "sourceUrl". Do not include any text before or after the JSON object.`,
+                contents: `Using Google Search, find one recent and interesting news article or a fascinating fact from a reputable source related to the topic of ${t(topic)}. Provide the direct, publicly accessible URL for the article. Then, based *only* on the content at that specific URL, write a concise summary (around 100-150 words). Also provide the article's title. Format the entire response as a single JSON object with keys: "title", "summary", "category" (which should be "${t(topic)}"), and "sourceUrl". Ensure the URL is not behind a paywall. Do not include any text before or after the JSON object.`,
                 config: {
                     tools: [{ googleSearch: {} }],
                 },
             });
 
             const responseText = articleResponse.text.trim();
-            const startIndex = responseText.indexOf('{');
-            const endIndex = responseText.lastIndexOf('}');
+            const jsonMatch = responseText.match(/```(json)?\s*([\s\S]*?)\s*```/);
+            let jsonString;
 
-            if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
-                console.error("Invalid JSON object format from Gemini:", responseText);
-                throw new Error("No valid JSON object found in the model's response for the article.");
+            if (jsonMatch && jsonMatch[2]) {
+                jsonString = jsonMatch[2];
+            } else {
+                const startIndex = responseText.indexOf('{');
+                const endIndex = responseText.lastIndexOf('}');
+                if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+                    jsonString = responseText.substring(startIndex, endIndex + 1);
+                } else {
+                    console.error("Invalid JSON object format from Gemini:", responseText);
+                    throw new Error("No valid JSON object found in the model's response for the article.");
+                }
             }
-            const jsonString = responseText.substring(startIndex, endIndex + 1);
             const articleData = JSON.parse(jsonString);
             const generatedArticle: Article = { id: Date.now(), ...articleData };
 

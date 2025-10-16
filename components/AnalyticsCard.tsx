@@ -80,7 +80,7 @@ const AnalyticsCard: React.FC<AnalyticsCardProps> = ({ t, theme, progressLog, la
 
     return (
         <g transform={`translate(${x},${y})`}>
-            <text x={0} y={0} dy={12} textAnchor="middle" fill={tickColor} fontSize={11}>
+            <text x={0} y={0} dy={16} textAnchor="middle" fill={tickColor} fontSize={11}>
                 <tspan x="0" dy="0">{date}</tspan>
                 <tspan x="0" dy="1.3em">{weekday}</tspan>
             </text>
@@ -102,7 +102,7 @@ const AnalyticsCard: React.FC<AnalyticsCardProps> = ({ t, theme, progressLog, la
       <div style={{ width: '100%', height: 250 }}>
         <ResponsiveContainer width="100%" height="100%">
             {activeTab === 'xp' ? (
-                <BarChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                <BarChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#4A4A4A' : '#E5E7EB'} />
                     <XAxis dataKey="day" stroke={tickColor} tick={<CustomizedAxisTick />} height={50} interval={0} />
                     <YAxis stroke={tickColor} fontSize={12} />
@@ -110,7 +110,7 @@ const AnalyticsCard: React.FC<AnalyticsCardProps> = ({ t, theme, progressLog, la
                     <Bar dataKey="xp" fill="#4ECDC4" radius={[4, 4, 0, 0]} />
                 </BarChart>
             ) : (
-                <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#4A4A4A' : '#E5E7EB'} />
                     <XAxis dataKey="day" stroke={tickColor} tick={<CustomizedAxisTick />} height={50} interval={0} />
                     <YAxis stroke={tickColor} fontSize={12} />

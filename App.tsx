@@ -153,7 +153,7 @@ function App() {
     } else {
         setUserStats({
             consecutiveCheckInDays: 0, lastCheckInDate: '', totalArticlesRead: 0,
-            articlesReadByTopic: {}, readTimestamps: [], weekendReads: 0,
+            articlesReadByTopic: {}, readTimestamps: [], readArticleUrls: [], weekendReads: 0,
             deepDives: 0, daysAtRankOne: 0, lastDateAtRankOne: ''
         });
     }
@@ -268,6 +268,8 @@ function App() {
 
   const handleArticleRead = useCallback((article: Article, deepDive: boolean) => {
     if (!userStats) return;
+    
+    // This function is now only called for new reads from ArticleReader
     const today = new Date();
     const dayOfWeek = today.getDay(); // 0 is Sunday, 6 is Saturday
     
@@ -278,7 +280,9 @@ function App() {
             [article.category.toLowerCase()]: (userStats.articlesReadByTopic[article.category.toLowerCase()] || 0) + 1,
         },
         readTimestamps: [...userStats.readTimestamps, Date.now()],
+        readArticleUrls: [...(userStats.readArticleUrls || []), article.sourceUrl],
     };
+
     if (deepDive) {
         newStats.deepDives = (userStats.deepDives || 0) + 1;
     }
@@ -321,7 +325,14 @@ function App() {
         <BottomNav t={t} currentPage={currentPage} onNavigate={setCurrentPage} user={currentUser} />
       </div>
       {selectedArticle && (
-        <ArticleReader article={selectedArticle} onClose={handleCloseArticle} onXpEarned={handleXpEarned} onLogReadingTime={handleLogReadingTime} onArticleRead={handleArticleRead} />
+        <ArticleReader 
+            article={selectedArticle} 
+            onClose={handleCloseArticle} 
+            onXpEarned={handleXpEarned} 
+            onLogReadingTime={handleLogReadingTime} 
+            onArticleRead={handleArticleRead} 
+            isRead={userStats?.readArticleUrls?.includes(selectedArticle.sourceUrl) ?? false}
+        />
       )}
       {xpToast && <XpToast key={xpToast.key} amount={xpToast.amount} />}
       {achievementToast && <AchievementToast key={achievementToast.key} achievement={achievementToast.achievement} t={t} />}

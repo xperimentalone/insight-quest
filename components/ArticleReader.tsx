@@ -7,28 +7,34 @@ interface ArticleReaderProps {
     onXpEarned: (amount: number) => void;
     onLogReadingTime: (minutes: number) => void;
     onArticleRead: (article: Article, deepDive: boolean) => void;
+    isRead: boolean;
 }
 
-const ArticleReader: React.FC<ArticleReaderProps> = ({ article, onClose, onXpEarned, onLogReadingTime, onArticleRead }) => {
-    const xpAwardedRef = useRef(false);
+const ArticleReader: React.FC<ArticleReaderProps> = ({ article, onClose, onXpEarned, onLogReadingTime, onArticleRead, isRead }) => {
+    const xpAwardedRef = useRef(isRead);
     const deepDiveRef = useRef(false);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            if (!xpAwardedRef.current) {
-                onXpEarned(3);
-                onLogReadingTime(3); // Assumes an average 3-minute read time
-                xpAwardedRef.current = true;
-            }
-        }, 20000); // 20 seconds
+        let timer: ReturnType<typeof setTimeout>;
+        if (!isRead) {
+            timer = setTimeout(() => {
+                if (!xpAwardedRef.current) {
+                    onXpEarned(3);
+                    onLogReadingTime(3); // Assumes an average 3-minute read time
+                    xpAwardedRef.current = true;
+                }
+            }, 15000); // 15 seconds
+        }
 
         return () => {
-            clearTimeout(timer);
-            // Report read stats when component unmounts
-            onArticleRead(article, deepDiveRef.current);
+            if(timer) clearTimeout(timer);
+            // Report read stats when component unmounts only if it's a new read
+            if (!isRead) {
+                onArticleRead(article, deepDiveRef.current);
+            }
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // Empty dependency array ensures this runs only on mount and unmount
+    }, [article, isRead, onArticleRead, onXpEarned, onLogReadingTime]);
 
     const handleLinkClick = () => {
         if (!xpAwardedRef.current) {

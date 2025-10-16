@@ -51,6 +51,7 @@ export interface UserStats {
     totalArticlesRead: number;
     articlesReadByTopic: { [topic: string]: number };
     readTimestamps: number[]; // Store timestamps of article reads
+    readArticleUrls: string[]; // Store source URLs of read articles
     weekendReads: number;
     deepDives: number;
     daysAtRankOne: number;

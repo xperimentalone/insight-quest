@@ -47,8 +47,8 @@ const NewsFeedCard: React.FC<NewsFeedCardProps> = ({ t, onSelectArticle, languag
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
             const prompt = language === 'zh'
-                ? `以繁體中文，使用 Google 搜尋尋找 5 篇來自香港，關於不同類別的最新新聞文章。對於每篇文章，請提供標題、100-150 字的摘要、類別和直接的來源網址。將整個回應格式化為單一 JSON 陣列，其中每個物件都有 "title"、"summary"、"category" 和 "sourceUrl" 的鍵。請確保來源網址有效且可公開存取。JSON 陣列前後不要包含任何文字。`
-                : `Find 5 recent news articles from Hong Kong from various categories using Google Search. For each article, provide the title, a 100-150 word summary, the category, and the direct source URL. Format the entire response as a single JSON array, where each object has "title", "summary", "category", and "sourceUrl" keys. Ensure source URLs are valid and publicly accessible. Do not include any text before or after the JSON array.`;
+                ? `以繁體中文，使用 Google 搜尋尋找 5 篇來自香港主要、信譽良好的新聞機構，關於不同類別的最新新聞文章。對於每篇文章，請提供其可公開存取的直接網址，然後*僅根據該特定網址的內容*撰寫一篇 100-150 字的摘要。同時也請提供標題和類別。確保該網址不是付費專區內容。將整個回應格式化為單一 JSON 陣列，其中每個物件都有 "title"、"summary"、"category" 和 "sourceUrl" 的鍵。JSON 陣列前後不要包含任何文字。`
+                : `Using Google Search, find 5 recent news articles from Hong Kong from various categories from major, reputable news outlets. For each article, provide its direct, publicly accessible URL, and then create a 100-150 word summary based *only* on the content found at that specific URL. Also provide the title and category. Ensure the URL is not behind a paywall. Format the entire response as a single JSON array where each object has "title", "summary", "category", and "sourceUrl" keys. Do not include any text before or after the JSON array.`;
 
             const response = await ai.models.generateContent({
                 model: "gemini-2.5-flash",
@@ -61,15 +61,21 @@ const NewsFeedCard: React.FC<NewsFeedCardProps> = ({ t, onSelectArticle, languag
             let articlesData = [];
             try {
                 const responseText = response.text.trim();
-                const startIndex = responseText.indexOf('[');
-                const endIndex = responseText.lastIndexOf(']');
+                const jsonMatch = responseText.match(/```(json)?\s*([\s\S]*?)\s*```/);
+                let jsonString;
 
-                if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
-                    console.error("Invalid JSON response format from Gemini:", responseText);
-                    throw new Error("No valid JSON array found in the model's response.");
+                if (jsonMatch && jsonMatch[2]) {
+                    jsonString = jsonMatch[2];
+                } else {
+                    const startIndex = responseText.indexOf('[');
+                    const endIndex = responseText.lastIndexOf(']');
+                    if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+                        jsonString = responseText.substring(startIndex, endIndex + 1);
+                    } else {
+                        console.error("Invalid JSON response format from Gemini:", responseText);
+                        throw new Error("No valid JSON array found in the model's response.");
+                    }
                 }
-
-                const jsonString = responseText.substring(startIndex, endIndex + 1);
                 articlesData = JSON.parse(jsonString);
             } catch (parseError) {
                  console.error("Error parsing news JSON:", parseError, "Raw response:", response.text);
